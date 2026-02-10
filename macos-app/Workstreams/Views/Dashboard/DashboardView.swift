@@ -3,6 +3,7 @@ import SwiftUI
 struct DashboardView: View {
     let appState: AppState
     let cliBridge: CLIBridge?
+    var windowDetector: WindowDetector?
     @State private var selectedProject: String?
     @State private var showOverview = false
 
@@ -19,7 +20,12 @@ struct DashboardView: View {
                     .foregroundStyle(.secondary)
             } else if let name = selectedProject,
                       let project = appState.state.projects[name] {
-                ProjectDetailView(project: project, appState: appState, cliBridge: cliBridge)
+                ProjectDetailView(
+                    project: project,
+                    appState: appState,
+                    cliBridge: cliBridge,
+                    windowDetector: windowDetector
+                )
             } else {
                 Text("Select a project")
                     .foregroundStyle(.secondary)

@@ -4,6 +4,7 @@ struct ProjectDetailView: View {
     let project: Project
     let appState: AppState
     let cliBridge: CLIBridge?
+    var windowDetector: WindowDetector?
 
     var body: some View {
         ScrollView {
@@ -14,7 +15,10 @@ struct ProjectDetailView: View {
 
                 ProjectMetadataView(project: project)
 
-                // Windows section placeholder (Phase 4)
+                if let windows = appState.windowsByProject[project.name], !windows.isEmpty {
+                    WindowsSectionView(windows: windows, windowDetector: windowDetector)
+                }
+
                 // Ports section placeholder (Phase 5)
 
                 HistorySection(entries: Array(project.history.suffix(5)))

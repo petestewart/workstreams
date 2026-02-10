@@ -104,38 +104,38 @@ macos-app/Workstreams/
   - Acceptance: Badges render correctly, time formatting matches CLI output, error components render in all states
 
 ### Phase 4: Window Detection
-- [ ] **Implement AppleScriptRunner service** `[in_progress]`
+- [x] **Implement AppleScriptRunner service** `[complete]`
   - Spec: [window-detection.md](./specs/window-detection.md#applescript-safety) — `escapeAppleScript()` function, [window-detection.md](./specs/window-detection.md#applescript-execution-helper) — executeAppleScript helper
   - Scope: Wrapper around NSAppleScript on background thread, `escapeAppleScript()` for all interpolated strings (escape `\` and `"`), error handling, result parsing
   - Acceptance: Can execute AppleScript and return string results without blocking UI
 
-- [ ] **Implement WindowDetector — iTerm detection** `[pending]`
+- [x] **Implement WindowDetector — iTerm detection** `[complete]`
   - Spec: [window-detection.md](./specs/window-detection.md#iterm-detection) — hierarchy parsing, CWD resolution via lsof, project matching with `standardizingPath`, it2api JSON structure
   - Scope: Detect iTerm sessions whose shell CWD starts with project path (via TTY → shell PID → lsof CWD), parse it2api hierarchy for window/tab/session mapping. Check it2api exists at launch, return empty if missing.
   - Acceptance: Returns ItermMatch array for projects with open iTerm sessions
 
-- [ ] **Implement WindowDetector — Chrome detection** `[pending]`
+- [x] **Implement WindowDetector — Chrome detection** `[complete]`
   - Spec: [window-detection.md](./specs/window-detection.md#chrome-detection) — URL pattern normalization (strip `/**`, contains check), AppleScript query for all tabs
   - Scope: Detect Chrome tabs matching project URL patterns (strip `/**`, test URL contains pattern prefix)
   - Acceptance: Returns ChromeMatch array for projects with matching Chrome tabs
 
-- [ ] **Implement WindowDetector — Generic detection** `[pending]`
+- [x] **Implement WindowDetector — Generic detection** `[complete]`
   - Spec: [window-detection.md](./specs/window-detection.md#generic-detection) — System Events query, case-insensitive matching, exclude iTerm/Chrome
   - Scope: Detect windows from any non-background process whose title contains project name (case-insensitive)
   - Acceptance: Returns GenericMatch array (catches VS Code, Figma, etc.)
 
-- [ ] **Implement WindowDetector polling orchestration** `[pending]`
+- [x] **Implement WindowDetector polling orchestration** `[complete]`
   - Spec: [window-detection.md](./specs/window-detection.md#polling-loop) — detection pass, running app check; [app-lifecycle.md](./specs/app-lifecycle.md#polling-lifecycle) — two-rate model (7s active / 30s background), visibility callbacks
   - Scope: Two-rate polling (7s when dashboard/dropdown visible, 30s in background), check which apps are running before querying, run detectors in parallel, publish windowsByProject
   - Acceptance: Dashboard updates live as windows open/close, polling slows when dashboard closes
 
-- [ ] **Implement WindowsSection + WindowCard views** `[pending]`
+- [x] **Implement WindowsSection + WindowCard views** `[complete]`
   - Spec: [ui.md](./specs/ui.md#window-list-view) — window card layouts per app type; [window-detection.md](./specs/window-detection.md#per-window-activation) — activation AppleScript for iTerm/Chrome/generic
   - Scope: Group detected windows by app name, show app icon + title + detail (URL for Chrome, session name for iTerm, process for generic), click to activate window via AppleScript
   - Acceptance: Dashboard shows live windows per project, clicking a card brings that window forward
 
 ### Phase 5: Terminal Insight + Port Status
-- [ ] **Implement ProcessMonitor service** `[pending]`
+- [ ] **Implement ProcessMonitor service** `[in_progress]`
   - Spec: [terminal-insight.md](./specs/terminal-insight.md) — shell PID resolution, child enumeration, classification heuristics, Claude detection (check `ps -o args=` for node processes), elapsed time parsing (MM:SS, HH:MM:SS, DD-HH:MM:SS)
   - Scope: For each iTerm session match, get shell PID from TTY, enumerate child processes via `ps`, detect Claude Code (process name/title patterns), detect dev servers (node/ruby/python with server args), detect idle shells (no children), calculate process duration
   - Acceptance: Returns process info per session: type (claude/server/idle), name, duration
