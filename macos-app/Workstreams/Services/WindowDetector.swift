@@ -25,6 +25,7 @@ final class WindowDetector: @unchecked Sendable {
 
     private static let it2apiPath = "/Applications/iTerm.app/Contents/Resources/utilities/it2api"
     private var hasIt2api: Bool = false
+    private var permissionCheckCounter: Int = 0
 
     init(appState: AppState, processMonitor: ProcessMonitor, portChecker: PortChecker) {
         self.appState = appState
@@ -38,11 +39,21 @@ final class WindowDetector: @unchecked Sendable {
         stopPolling()
         currentRate = rate
         isPolling = true
+        permissionCheckCounter = 0
 
         pollingTask = Task { [weak self] in
             while !Task.isCancelled {
                 guard let self else { return }
                 await self.detectOnce()
+
+                // Re-check permissions every ~30s: every cycle for reducedRate, every 4th for fullRate
+                self.permissionCheckCounter += 1
+                let checkInterval = rate == .reducedRate ? 1 : 4
+                if self.permissionCheckCounter >= checkInterval {
+                    self.permissionCheckCounter = 0
+                    await self.recheckPermissions()
+                }
+
                 try? await Task.sleep(for: .seconds(rate.interval))
             }
         }
@@ -129,6 +140,29 @@ final class WindowDetector: @unchecked Sendable {
         #else
         return (false, false)
         #endif
+    }
+
+    private func recheckPermissions() async {
+        let bothGranted = await MainActor.run {
+            appState.hasAccessibilityPermission && appState.hasAutomationPermission
+        }
+        guard !bothGranted else { return }
+
+        let perms = await Self.checkPermissions()
+        let hadAccessibility = await MainActor.run { appState.hasAccessibilityPermission }
+        let hadAutomation = await MainActor.run { appState.hasAutomationPermission }
+
+        let transitioned = (!hadAccessibility && perms.accessibility) || (!hadAutomation && perms.automation)
+
+        await MainActor.run {
+            appState.hasAccessibilityPermission = perms.accessibility
+            appState.hasAutomationPermission = perms.automation
+        }
+
+        // Trigger immediate detection on permission grant
+        if transitioned {
+            await detectOnce()
+        }
     }
 
     // MARK: - Running Apps

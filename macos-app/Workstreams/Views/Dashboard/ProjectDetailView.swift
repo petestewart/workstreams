@@ -17,6 +17,8 @@ struct ProjectDetailView: View {
 
                 if let windows = appState.windowsByProject[project.name], !windows.isEmpty {
                     WindowsSectionView(windows: windows, windowDetector: windowDetector)
+                } else if !appState.hasAccessibilityPermission {
+                    PermissionPromptView(appState: appState)
                 }
 
                 if let ports = appState.portStatusByProject[project.name], !ports.isEmpty {
@@ -39,6 +41,8 @@ struct ProjectHeaderView: View {
     let cliBridge: CLIBridge?
     @State private var isLoading = false
     @State private var actionError: String?
+    @State private var showParkInput = false
+    @State private var parkNote = ""
 
     private var isFocused: Bool {
         appState.state.currentFocus == project.name
@@ -91,6 +95,31 @@ struct ProjectHeaderView: View {
                         }
                     }
                 }
+
+                if project.status == .active {
+                    ActionButton(label: "Park", isLoading: isLoading) {
+                        showParkInput = true
+                    }
+                }
+            }
+        }
+
+        if showParkInput {
+            HStack {
+                TextField("Note (optional)", text: $parkNote)
+                    .textFieldStyle(.roundedBorder)
+                    .frame(maxWidth: 300)
+                    .onSubmit {
+                        Task { await parkProject() }
+                    }
+                Button("Park") {
+                    Task { await parkProject() }
+                }
+                .disabled(isLoading)
+                Button("Cancel") {
+                    showParkInput = false
+                    parkNote = ""
+                }
             }
         }
 
@@ -99,6 +128,15 @@ struct ProjectHeaderView: View {
                 .font(.caption)
                 .foregroundStyle(.red)
                 .transition(.opacity)
+        }
+    }
+
+    private func parkProject() async {
+        showParkInput = false
+        let note = parkNote.trimmingCharacters(in: .whitespacesAndNewlines)
+        parkNote = ""
+        await performAction {
+            try await cliBridge?.park(project.name, note: note.isEmpty ? nil : note)
         }
     }
 

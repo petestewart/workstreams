@@ -16,8 +16,12 @@ struct DashboardView: View {
             )
         } detail: {
             if showOverview {
-                Text("Overview Grid — coming in Phase 6")
-                    .foregroundStyle(.secondary)
+                OverviewGridView(
+                    appState: appState,
+                    cliBridge: cliBridge,
+                    selectedProject: $selectedProject,
+                    showOverview: $showOverview
+                )
             } else if let name = selectedProject,
                       let project = appState.state.projects[name] {
                 ProjectDetailView(

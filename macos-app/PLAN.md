@@ -156,22 +156,22 @@ macos-app/Workstreams/
   - Acceptance: Port indicators match actual server status
 
 ### Phase 6: Overview Grid + Polish
-- [ ] **Implement OverviewGridView + ProjectCard** `[in_progress]`
+- [x] **Implement OverviewGridView + ProjectCard** `[complete]`
   - Spec: [ui.md](./specs/ui.md#overview-grid) — LazyVGrid layout, ProjectCard wireframe, parked projects shown dimmed
   - Scope: Adaptive grid of project summary cards showing color, name, status, window count, key signals (Claude active, dev server up, etc.), click card to navigate to detail. Include parked projects (visually dimmed).
   - Acceptance: "All Projects" sidebar option shows card grid overview
 
-- [ ] **Implement Park action with note input** `[pending]`
+- [x] **Implement Park action with note input** `[complete]`
   - Spec: [cli-bridge.md](./specs/cli-bridge.md#convenience-methods) — park/unpark methods; [error-handling.md](./specs/error-handling.md#action-button-states) — loading/error states
   - Scope: Park button in dashboard shows text field for optional note, calls `ws park [note]` via CLIBridge. Use ActionButton component for loading/error feedback.
   - Acceptance: Can park a project from the dashboard with a note
 
-- [ ] **Implement Settings for CLI path** `[pending]`
+- [x] **Implement Settings for CLI path** `[complete]`
   - Spec: [ui.md](./specs/ui.md#settings--permissions) — SettingsView layout; [cli-bridge.md](./specs/cli-bridge.md#binary-discovery) — discovery cascade, retryDiscovery(); [app-lifecycle.md](./specs/app-lifecycle.md#cli-binary-re-discovery) — retry flow
   - Scope: UserDefaults-backed setting for ws binary path, settings accessible from menu bar dropdown, auto-detect on first launch, "Retry" button when CLI not found
   - Acceptance: User can configure CLI path if auto-detection fails
 
-- [ ] **Handle Accessibility permission flow** `[pending]`
+- [x] **Handle Accessibility permission flow** `[complete]`
   - Spec: [ui.md](./specs/ui.md#permissions-flow) — permission prompt UI, degradation table; [window-detection.md](./specs/window-detection.md#permission-detection) — AXIsProcessTrusted check; [app-lifecycle.md](./specs/app-lifecycle.md#permission-re-checking) — 30s re-check, transition detection
   - Scope: Detect when Accessibility/Automation permissions are missing, show helpful prompt directing user to System Settings, gracefully degrade (show permission prompt in window sections when denied), re-check every 30s until granted
   - Acceptance: First launch guides user through permission grants, app works after granting
