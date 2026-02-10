@@ -1,17 +1,18 @@
 import { execSync } from "node:child_process";
 import { existsSync } from "node:fs";
+import type { ItermMatch } from "../types.js";
 
 const IT2API = "/Applications/iTerm.app/Contents/Resources/utilities/it2api";
 
-interface TabMatch {
+interface HierarchyEntry {
   windowId: string;
   tabId: string;
-  sessionId: string;
+  sessionName: string;
 }
 
-function parseHierarchy(output: string): Map<string, { windowId: string; tabId: string }> {
-  // Map session ID → { windowId, tabId }
-  const map = new Map<string, { windowId: string; tabId: string }>();
+function parseHierarchy(output: string): Map<string, HierarchyEntry> {
+  // Map session ID → { windowId, tabId, sessionName }
+  const map = new Map<string, HierarchyEntry>();
   let currentWindow = "";
   let currentTab = "";
 
@@ -26,18 +27,48 @@ function parseHierarchy(output: string): Map<string, { windowId: string; tabId: 
       currentTab = tabMatch[1];
       continue;
     }
-    const sessionMatch = line.match(/Session .+ id=(\S+)/);
+    const sessionMatch = line.match(/Session "([^"]*)" id=(\S+)/);
     if (sessionMatch) {
-      map.set(sessionMatch[1], { windowId: currentWindow, tabId: currentTab });
+      map.set(sessionMatch[2], {
+        windowId: currentWindow,
+        tabId: currentTab,
+        sessionName: sessionMatch[1],
+      });
+      continue;
+    }
+    // Fallback: session line without quoted name
+    const sessionFallback = line.match(/Session .+ id=(\S+)/);
+    if (sessionFallback) {
+      map.set(sessionFallback[1], {
+        windowId: currentWindow,
+        tabId: currentTab,
+        sessionName: "",
+      });
     }
   }
   return map;
 }
 
-function findMatchingSession(projectPath: string): TabMatch | null {
-  // Use AppleScript to find the session whose tty's shell cwd matches projectPath
+function isItermRunning(): boolean {
+  try {
+    const check = execSync("osascript", {
+      input: `tell application "System Events" to return exists process "iTerm2"`,
+      encoding: "utf-8",
+      stdio: ["pipe", "pipe", "pipe"],
+    }).trim();
+    return check === "true";
+  } catch {
+    return false;
+  }
+}
+
+export function detectIterm(projectPath: string): ItermMatch[] {
+  if (!isItermRunning()) return [];
+
+  // Find ALL sessions whose shell cwd starts with projectPath
   const script = `
 tell application "iTerm"
+  set matchedIds to {}
   repeat with w in windows
     repeat with t in tabs of w
       repeat with s in sessions of t
@@ -48,67 +79,65 @@ tell application "iTerm"
           if shellPID is not "" then
             set sessionPath to do shell script "lsof -a -p " & shellPID & " -d cwd -Fn 2>/dev/null | awk '/^n/{print substr($0,2)}'"
             if sessionPath starts with "${projectPath}" then
-              return id of s
+              set end of matchedIds to id of s
             end if
           end if
         end try
       end repeat
     end repeat
   end repeat
-  return ""
+  set AppleScript's text item delimiters to "||"
+  return matchedIds as text
 end tell
 `;
 
   try {
-    const sessionId = execSync("osascript", {
+    const result = execSync("osascript", {
       input: script,
       encoding: "utf-8",
       stdio: ["pipe", "pipe", "pipe"],
     }).trim();
-    if (!sessionId) return null;
 
-    // Get hierarchy to find the tab ID for this session
+    if (!result) return [];
+
+    const sessionIds = result.split("||");
+
+    // Get hierarchy to map session IDs to window/tab IDs and names
     const hierarchy = execSync(`${IT2API} show-hierarchy`, {
       encoding: "utf-8",
       stdio: ["pipe", "pipe", "pipe"],
     });
     const map = parseHierarchy(hierarchy);
-    const info = map.get(sessionId);
-    if (!info) return null;
 
-    return { ...info, sessionId };
+    const matches: ItermMatch[] = [];
+    for (const sessionId of sessionIds) {
+      const info = map.get(sessionId);
+      if (info) {
+        matches.push({
+          app: "iTerm",
+          window_id: info.windowId,
+          tab_id: info.tabId,
+          session_id: sessionId,
+          title: info.sessionName || sessionId,
+        });
+      }
+    }
+    return matches;
   } catch {
-    return null;
+    return [];
   }
 }
 
-export function focusIterm(projectPath: string): boolean {
-  // Check iTerm is running
-  try {
-    const check = execSync("osascript", {
-      input: `tell application "System Events" to return exists process "iTerm2"`,
-      encoding: "utf-8",
-      stdio: ["pipe", "pipe", "pipe"],
-    }).trim();
-    if (check !== "true") return false;
-  } catch {
-    return false;
-  }
-
-  const match = findMatchingSession(projectPath);
-  if (!match) return false;
-
-  // Use it2api to activate the tab (works without System Events permissions)
+export function activateIterm(match: ItermMatch): boolean {
   try {
     if (existsSync(IT2API)) {
-      execSync(`${IT2API} activate tab ${match.tabId}`, {
+      execSync(`${IT2API} activate tab ${match.tab_id}`, {
         stdio: ["pipe", "pipe", "pipe"],
       });
-      execSync(`${IT2API} activate window ${match.windowId}`, {
+      execSync(`${IT2API} activate window ${match.window_id}`, {
         stdio: ["pipe", "pipe", "pipe"],
       });
     }
-    // Also bring iTerm to front
     execSync("osascript", {
       input: `tell application "iTerm" to activate`,
       encoding: "utf-8",
@@ -118,4 +147,12 @@ export function focusIterm(projectPath: string): boolean {
   } catch {
     return false;
   }
+}
+
+export function focusIterm(projectPath: string): boolean {
+  const matches = detectIterm(projectPath);
+  if (matches.length === 0) return false;
+
+  // Activate the first match (preserves original behavior)
+  return activateIterm(matches[0]);
 }

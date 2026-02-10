@@ -6,6 +6,8 @@ import { listCommand } from "./commands/list.js";
 import { focusCommand } from "./commands/focus.js";
 import { parkCommand } from "./commands/park.js";
 import { statusCommand } from "./commands/status.js";
+import { rescanCommand } from "./commands/rescan.js";
+import { windowsCommand } from "./commands/windows.js";
 
 const program = new Command();
 
@@ -29,6 +31,8 @@ program
 program
   .command("focus")
   .argument("[name]", "Project name (defaults to current project)")
+  .option("-w, --window <n>", "Activate only the Nth detected window")
+  .option("-a, --app <name>", "Filter to windows from a specific app (iTerm, Chrome, etc.)")
   .description("Focus a project — bring its windows to the front")
   .action(focusCommand);
 
@@ -43,5 +47,19 @@ program
   .alias("st")
   .description("Show detail for the current project")
   .action(statusCommand);
+
+program
+  .command("windows")
+  .argument("[name]", "Project name (defaults to current project)")
+  .option("--json", "Output as JSON for programmatic consumption")
+  .description("List detected windows for a project without raising them")
+  .action(windowsCommand);
+
+program
+  .command("rescan")
+  .argument("[name]", "Project name (defaults to current project)")
+  .option("-a, --all", "Rescan all registered projects")
+  .description("Re-scan project signatures (git remote, ports, database)")
+  .action(rescanCommand);
 
 program.parse();

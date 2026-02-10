@@ -37,3 +37,29 @@ export interface WorkstreamsState {
   projects: Record<string, Project>;
   current_focus: string | null;
 }
+
+// Window match types for detect/activate split
+
+export interface ItermMatch {
+  app: "iTerm";
+  window_id: string;
+  tab_id: string;
+  session_id: string;
+  title: string;
+}
+
+export interface ChromeMatch {
+  app: "Chrome";
+  window_index: number;
+  tab_index: number;
+  title: string;
+  url: string;
+}
+
+export interface GenericMatch {
+  app: string;
+  window_title: string;
+  process_name: string;
+}
+
+export type WindowMatch = ItermMatch | ChromeMatch | GenericMatch;
