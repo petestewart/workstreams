@@ -52,6 +52,32 @@ export function readState(): WorkstreamsState {
   return JSON.parse(raw) as WorkstreamsState;
 }
 
+// Window match types for detect/activate split
+
+export interface ItermMatch {
+  app: "iTerm";
+  window_id: string;
+  tab_id: string;
+  session_id: string;
+  title: string;
+}
+
+export interface ChromeMatch {
+  app: "Chrome";
+  window_index: number;
+  tab_index: number;
+  title: string;
+  url: string;
+}
+
+export interface GenericMatch {
+  app: string;
+  window_title: string;
+  process_name: string;
+}
+
+export type WindowMatch = ItermMatch | ChromeMatch | GenericMatch;
+
 export function timeAgo(isoDate: string): string {
   const diff = Date.now() - new Date(isoDate).getTime();
   const minutes = Math.floor(diff / 60000);

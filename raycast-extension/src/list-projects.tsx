@@ -8,14 +8,14 @@ import {
   showToast,
   Toast,
 } from "@raycast/api";
-import { readState, timeAgo, type Project } from "./utils/state";
-import { useState, useCallback } from "react";
+import { readState, timeAgo, type Project, type WindowMatch, type ItermMatch } from "./utils/state";
+import { activateMatch, activateItermMatch } from "./utils/activate";
+import { useState, useCallback, useEffect } from "react";
 import { execFileSync } from "node:child_process";
 import path from "node:path";
 import { homedir } from "node:os";
 
 const CLI_SCRIPT = path.join(homedir(), "Projects", "workstreams", "dist", "cli.js");
-const IT2API = "/Applications/iTerm.app/Contents/Resources/utilities/it2api";
 
 function wsExec(args: string[], cwd?: string) {
   return execFileSync(process.execPath, [CLI_SCRIPT, ...args], {
@@ -25,72 +25,79 @@ function wsExec(args: string[], cwd?: string) {
   });
 }
 
-function focusItermTab(projectPath: string): boolean {
+function getWindowMatches(projectName: string): WindowMatch[] {
   try {
-    // Get hierarchy from it2api
-    const hierarchy = execFileSync(IT2API, ["show-hierarchy"], { encoding: "utf-8" as const });
+    const output = wsExec(["windows", projectName, "--json"]);
+    return JSON.parse(output) as WindowMatch[];
+  } catch {
+    return [];
+  }
+}
 
-    // Parse: map session ID → { tabId, windowId }
-    const sessions = new Map<string, { tabId: string; windowId: string }>();
-    let curWindow = "";
-    let curTab = "";
-    for (const line of hierarchy.split("\n")) {
-      const wm = line.match(/^Window id=(\S+)/);
-      if (wm) { curWindow = wm[1]; continue; }
-      const tm = line.match(/^\s+Tab id=(\S+)/);
-      if (tm) { curTab = tm[1]; continue; }
-      const sm = line.match(/Session .+ id=(\S+)/);
-      if (sm) sessions.set(sm[1], { tabId: curTab, windowId: curWindow });
-    }
+function windowIcon(match: WindowMatch): Icon {
+  if ("session_id" in match) return Icon.Terminal;
+  if ("url" in match) return Icon.Globe;
+  return Icon.Window;
+}
 
-    // Get each session's tty via AppleScript
-    const ttyScript = `tell application "iTerm"
-set output to ""
-repeat with w in windows
-  repeat with t in tabs of w
-    repeat with s in sessions of t
-      set output to output & (id of s) & "=" & (tty of s) & linefeed
-    end repeat
-  end repeat
-end repeat
-return output
-end tell`;
+function windowTitle(match: WindowMatch): string {
+  if ("session_id" in match) return match.title;
+  if ("url" in match) return match.title;
+  return match.window_title;
+}
 
-    const ttyOutput = execFileSync("/usr/bin/osascript", {
-      input: ttyScript,
-      encoding: "utf-8" as const,
-    }).trim();
+function windowSubtitle(match: WindowMatch): string {
+  if ("url" in match) return match.url;
+  if ("session_id" in match) return "iTerm";
+  return match.process_name;
+}
 
-    // Match tty → cwd via lsof, find the one matching projectPath
-    for (const line of ttyOutput.split("\n")) {
-      const eq = line.indexOf("=");
-      if (eq < 0) continue;
-      const sessionId = line.slice(0, eq).trim();
-      const tty = line.slice(eq + 1).trim();
-      const info = sessions.get(sessionId);
-      if (!info || !tty) continue;
+function WindowList({ project }: { project: Project }) {
+  const [matches, setMatches] = useState<WindowMatch[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
 
-      try {
-        const ttyName = path.basename(tty);
-        const psOut = execFileSync("/bin/ps", ["-t", ttyName, "-o", "pid=,comm="], { encoding: "utf-8" as const });
-        const shellLine = psOut.split("\n").find((l) => /zsh|bash|fish/.test(l));
-        const shellPid = shellLine?.trim().split(/\s+/)[0];
-        if (!shellPid) continue;
+  useEffect(() => {
+    const results = getWindowMatches(project.name);
+    setMatches(results);
+    setIsLoading(false);
+  }, [project.name]);
 
-        const lsofOut = execFileSync("/usr/sbin/lsof", ["-a", "-p", shellPid, "-d", "cwd", "-Fn"], { encoding: "utf-8" as const });
-        const cwdLine = lsofOut.split("\n").find((l) => l.startsWith("n"));
-        const cwd = cwdLine?.slice(1);
-
-        if (cwd && cwd.startsWith(projectPath)) {
-          execFileSync(IT2API, ["activate", "tab", info.tabId]);
-          execFileSync(IT2API, ["activate", "window", info.windowId]);
-          execFileSync("/usr/bin/osascript", { input: 'tell application "iTerm" to activate' });
-          return true;
-        }
-      } catch { continue; }
-    }
-  } catch { /* it2api not available */ }
-  return false;
+  return (
+    <List
+      navigationTitle={`${project.name} — Windows`}
+      searchBarPlaceholder="Search windows..."
+      isLoading={isLoading}
+    >
+      {matches.length === 0 && !isLoading ? (
+        <List.EmptyView
+          title="No Windows Found"
+          description={`No matching windows detected for ${project.name}.`}
+        />
+      ) : (
+        matches.map((match, idx) => (
+          <List.Item
+            key={idx}
+            title={windowTitle(match)}
+            subtitle={windowSubtitle(match)}
+            icon={windowIcon(match)}
+            accessories={[{ text: match.app }]}
+            actions={
+              <ActionPanel>
+                <Action
+                  title="Activate Window"
+                  icon={Icon.Eye}
+                  onAction={async () => {
+                    await closeMainWindow();
+                    activateMatch(match);
+                  }}
+                />
+              </ActionPanel>
+            }
+          />
+        ))
+      )}
+    </List>
+  );
 }
 
 const COLOR_MAP: Record<string, Color> = {
@@ -137,11 +144,18 @@ function ProjectItem({
             onAction={async () => {
               try {
                 await closeMainWindow();
-                // Update state (no AppleScript orchestration needed)
+                // CLI updates state; its AppleScript won't activate windows from
+                // Raycast's context, so we handle activation directly.
                 wsExec(["focus", project.name]);
-                // Switch iTerm tab directly via it2api + lsof
-                if (!focusItermTab(project.path)) {
+                const matches = getWindowMatches(project.name);
+                const itermMatches = matches.filter((m): m is ItermMatch => "session_id" in m);
+                if (itermMatches.length > 0) {
+                  for (const m of itermMatches) activateItermMatch(m);
+                } else {
                   execFileSync("open", ["-a", "iTerm"]);
+                }
+                for (const m of matches) {
+                  if (!("session_id" in m)) activateMatch(m);
                 }
               } catch (error) {
                 await showToast({
@@ -151,6 +165,12 @@ function ProjectItem({
                 });
               }
             }}
+          />
+          <Action.Push
+            title="Show Windows"
+            icon={Icon.AppWindowList}
+            target={<WindowList project={project} />}
+            shortcut={{ modifiers: ["cmd", "shift"], key: "w" }}
           />
           <Action
             title="Park Project"
