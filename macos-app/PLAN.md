@@ -46,23 +46,23 @@ macos-app/Workstreams/
 ## Tasks
 
 ### Phase 1: Xcode Project + Data Models
-- [ ] **Create Xcode project structure** `[pending]`
+- [x] **Create Xcode project structure** `[complete]`
   - Spec: [app-lifecycle.md](./specs/app-lifecycle.md) (LSUIElement, Info.plist), [specs/README.md](./specs/README.md) (constraints)
   - Scope: Create `macos-app/` directory, initialize Xcode project targeting macOS 15+, configure Info.plist (LSUIElement=YES, NSAppleEventsUsageDescription), disable App Sandbox
   - Acceptance: `xcodebuild build` succeeds with empty app
 
-- [ ] **Implement Codable model types** `[pending]`
+- [x] **Implement Codable model types** `[complete]`
   - Spec: [data-model.md](./specs/data-model.md) — all Swift types, CodingKeys, HistoryAction with `.unknown(String)` fallback, AppState `@Observable` class
   - Scope: WorkstreamsState, Project, ProjectColor (with SwiftUI Color mapping), ProjectStatus, ProjectSignatures, HistoryEntry, WindowMatch (enum with iTerm/Chrome/Generic variants), ProcessInfo, PortStatus, AppState
   - Acceptance: Models successfully decode real `~/.workstreams/state.json`
 
-- [ ] **Implement WorkstreamsApp entry point stub** `[pending]`
+- [x] **Implement WorkstreamsApp entry point stub** `[complete]`
   - Spec: [app-lifecycle.md](./specs/app-lifecycle.md) (startup sequence, subsystem init), [ui.md](./specs/ui.md#app-entry-point) (scene structure)
   - Scope: `@main` struct with empty MenuBarExtra scene, verify app launches as menu-bar-only
   - Acceptance: App builds, shows empty menu bar icon, no Dock icon
 
 ### Phase 2: State Monitor + Menu Bar
-- [ ] **Implement StateMonitor service** `[pending]`
+- [ ] **Implement StateMonitor service** `[in_progress]`
   - Spec: [state-monitor.md](./specs/state-monitor.md) — DispatchSource setup, reopen on rename/delete, retry logic (3x/50ms), fallback polling, file lifecycle table
   - Scope: `@Observable` class that reads `~/.workstreams/state.json`, watches with DispatchSource (debounced 100ms), fallback 2s polling timer, publishes state changes
   - Acceptance: State updates reactively when CLI modifies state.json
