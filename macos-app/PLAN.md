@@ -67,23 +67,23 @@ macos-app/Workstreams/
   - Scope: `@Observable` class that reads `~/.workstreams/state.json`, watches with DispatchSource (debounced 100ms), fallback 2s polling timer, publishes state changes
   - Acceptance: State updates reactively when CLI modifies state.json
 
-- [ ] **Implement MenuBarIcon** `[in_progress]`
+- [x] **Implement MenuBarIcon** `[complete]`
   - Spec: [ui.md](./specs/ui.md#menu-bar-icon) — icon states, color mapping
   - Scope: SF Symbol colored circle reflecting focused project's color, gray when no focus
   - Acceptance: Menu bar shows colored dot matching `current_focus` project's color
 
-- [ ] **Implement MenuBarView dropdown** `[pending]`
+- [x] **Implement MenuBarView dropdown** `[complete]`
   - Spec: [ui.md](./specs/ui.md#menu-bar-dropdown) — layout wireframe, interaction model, quick focus feedback
   - Scope: Focused project at top, active projects section, parked projects section (with notes), "Open Dashboard" and "Quit" at bottom
   - Acceptance: Clicking menu bar dot shows project list, projects display correctly
 
-- [ ] **Implement CLIBridge service** `[pending]`
+- [x] **Implement CLIBridge service** `[complete]`
   - Spec: [cli-bridge.md](./specs/cli-bridge.md) — discovery cascade, `/bin/zsh -l` for PATH, 5s timeout, CLIError types, convenience methods
   - Scope: Discover `ws` binary (UserDefaults → `which ws` via login shell → common paths), execute focus/park/rescan/unpark commands via Process with timeout
   - Acceptance: Clicking a project in menu bar dropdown calls `ws focus <name>` and project switches
 
 ### Phase 3: Dashboard Window
-- [ ] **Implement DashboardView with NavigationSplitView** `[pending]`
+- [ ] **Implement DashboardView with NavigationSplitView** `[in_progress]`
   - Spec: [ui.md](./specs/ui.md#dashboard-window) — NavigationSplitView layout, [app-lifecycle.md](./specs/app-lifecycle.md) (onDashboardOpen/Close for polling lifecycle)
   - Scope: Main window shell with sidebar + detail area, "Open Dashboard" from menu bar opens this window, wire up visibility callbacks for polling rate changes
   - Acceptance: Window opens from menu bar, shows sidebar and detail pane
