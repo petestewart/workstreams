@@ -15,8 +15,7 @@ struct WorkstreamsApp: App {
         .menuBarExtraStyle(.window)
 
         Window("Workstreams", id: "dashboard") {
-            Text("Dashboard — coming soon")
-                .frame(minWidth: 400, minHeight: 300)
+            DashboardView(appState: appState, cliBridge: cliBridge)
         }
         .defaultSize(width: 900, height: 600)
 

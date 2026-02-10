@@ -83,28 +83,28 @@ macos-app/Workstreams/
   - Acceptance: Clicking a project in menu bar dropdown calls `ws focus <name>` and project switches
 
 ### Phase 3: Dashboard Window
-- [ ] **Implement DashboardView with NavigationSplitView** `[in_progress]`
+- [x] **Implement DashboardView with NavigationSplitView** `[complete]`
   - Spec: [ui.md](./specs/ui.md#dashboard-window) — NavigationSplitView layout, [app-lifecycle.md](./specs/app-lifecycle.md) (onDashboardOpen/Close for polling lifecycle)
   - Scope: Main window shell with sidebar + detail area, "Open Dashboard" from menu bar opens this window, wire up visibility callbacks for polling rate changes
   - Acceptance: Window opens from menu bar, shows sidebar and detail pane
 
-- [ ] **Implement SidebarView + SidebarProjectRow** `[pending]`
+- [x] **Implement SidebarView + SidebarProjectRow** `[complete]`
   - Spec: [ui.md](./specs/ui.md#sidebar) — SidebarView, SidebarRow with focus indicator
   - Scope: Project list grouped into Active/Parked sections, color dots, focused project highlighted, "All Projects" overview option at top
   - Acceptance: Sidebar shows all projects from state, selection updates detail pane
 
-- [ ] **Implement ProjectDetailView** `[pending]`
+- [x] **Implement ProjectDetailView** `[complete]`
   - Spec: [ui.md](./specs/ui.md#project-detail) — header, metadata, history layouts; [error-handling.md](./specs/error-handling.md) (ActionButton states for Focus/Park); [app-lifecycle.md](./specs/app-lifecycle.md) (missing path warning badge)
   - Scope: ScrollView with ProjectHeaderView (name, color, status badge, Focus/Park action buttons), ProjectMetadataView (path, git remote, database, URL patterns), HistorySection (last 5 entries with timeAgo), missing-path warning
   - Acceptance: Selecting a project shows full metadata and history
 
-- [ ] **Implement shared components** `[pending]`
+- [x] **Implement shared components** `[complete]`
   - Spec: [ui.md](./specs/ui.md#history-view) — timeAgo function; [error-handling.md](./specs/error-handling.md) — ErrorBanner, InlineError, ActionButton components
   - Scope: StatusBadge (Active/Focused/Parked pill), TimeFormatting (timeAgo utility), ErrorBanner (Tier 1), InlineError (Tier 2), ActionButton (ready/loading/error states with 5s auto-clear)
   - Acceptance: Badges render correctly, time formatting matches CLI output, error components render in all states
 
 ### Phase 4: Window Detection
-- [ ] **Implement AppleScriptRunner service** `[pending]`
+- [ ] **Implement AppleScriptRunner service** `[in_progress]`
   - Spec: [window-detection.md](./specs/window-detection.md#applescript-safety) — `escapeAppleScript()` function, [window-detection.md](./specs/window-detection.md#applescript-execution-helper) — executeAppleScript helper
   - Scope: Wrapper around NSAppleScript on background thread, `escapeAppleScript()` for all interpolated strings (escape `\` and `"`), error handling, result parsing
   - Acceptance: Can execute AppleScript and return string results without blocking UI
