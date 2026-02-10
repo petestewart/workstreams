@@ -36,6 +36,7 @@ struct ItermMatch: Identifiable {
     let tabId: String
     let sessionId: String
     let title: String
+    let tty: String?
     var processInfo: ProcessInfo?
 }
 

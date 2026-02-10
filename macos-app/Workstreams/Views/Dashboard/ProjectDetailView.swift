@@ -19,7 +19,9 @@ struct ProjectDetailView: View {
                     WindowsSectionView(windows: windows, windowDetector: windowDetector)
                 }
 
-                // Ports section placeholder (Phase 5)
+                if let ports = appState.portStatusByProject[project.name], !ports.isEmpty {
+                    PortStatusView(ports: ports)
+                }
 
                 HistorySection(entries: Array(project.history.suffix(5)))
             }

@@ -135,28 +135,28 @@ macos-app/Workstreams/
   - Acceptance: Dashboard shows live windows per project, clicking a card brings that window forward
 
 ### Phase 5: Terminal Insight + Port Status
-- [ ] **Implement ProcessMonitor service** `[in_progress]`
+- [x] **Implement ProcessMonitor service** `[complete]`
   - Spec: [terminal-insight.md](./specs/terminal-insight.md) — shell PID resolution, child enumeration, classification heuristics, Claude detection (check `ps -o args=` for node processes), elapsed time parsing (MM:SS, HH:MM:SS, DD-HH:MM:SS)
   - Scope: For each iTerm session match, get shell PID from TTY, enumerate child processes via `ps`, detect Claude Code (process name/title patterns), detect dev servers (node/ruby/python with server args), detect idle shells (no children), calculate process duration
   - Acceptance: Returns process info per session: type (claude/server/idle), name, duration
 
-- [ ] **Implement TerminalSessionCard view** `[pending]`
+- [x] **Implement TerminalSessionCard view** `[complete]`
   - Spec: [terminal-insight.md](./specs/terminal-insight.md#display-formatting) — displayLabel format; [ui.md](./specs/ui.md#window-list-view) — iTerm card layout with process info
   - Scope: Enhanced iTerm card showing process status — "Claude: active (12m)", "node (running 45m)", "Shell: idle (2m)"
   - Acceptance: iTerm cards in dashboard show rich process information
 
-- [ ] **Implement PortChecker service** `[pending]`
+- [x] **Implement PortChecker service** `[complete]`
   - Spec: [port-checker.md](./specs/port-checker.md) — NWConnection probe implementation, 500ms timeout, parallel probing with TaskGroup, edge cases (port 0, >65535), integration with detection cycle
   - Scope: TCP connect probe to localhost:port with brief timeout, check all registered ports in parallel, return port→isListening map
   - Acceptance: Correctly reports whether dev servers are running on registered ports
 
-- [ ] **Implement PortStatusView** `[pending]`
+- [x] **Implement PortStatusView** `[complete]`
   - Spec: [ui.md](./specs/ui.md#port-status-view) — green/red circle, monospace labels; [port-checker.md](./specs/port-checker.md#display) — indicator design
   - Scope: Green/red dot per port with "localhost:PORT" label and "Listening"/"Not listening" text, auto-refreshes with window detection cycle
   - Acceptance: Port indicators match actual server status
 
 ### Phase 6: Overview Grid + Polish
-- [ ] **Implement OverviewGridView + ProjectCard** `[pending]`
+- [ ] **Implement OverviewGridView + ProjectCard** `[in_progress]`
   - Spec: [ui.md](./specs/ui.md#overview-grid) — LazyVGrid layout, ProjectCard wireframe, parked projects shown dimmed
   - Scope: Adaptive grid of project summary cards showing color, name, status, window count, key signals (Claude active, dev server up, etc.), click card to navigate to detail. Include parked projects (visually dimmed).
   - Acceptance: "All Projects" sidebar option shows card grid overview

@@ -45,7 +45,9 @@ struct WorkstreamsApp: App {
         let bridge = CLIBridge(appState: state)
         _cliBridge = State(initialValue: bridge)
 
-        let detector = WindowDetector(appState: state)
+        let procMonitor = ProcessMonitor(appState: state)
+        let portChecker = PortChecker(appState: state)
+        let detector = WindowDetector(appState: state, processMonitor: procMonitor, portChecker: portChecker)
         _windowDetector = State(initialValue: detector)
 
         monitor.start()

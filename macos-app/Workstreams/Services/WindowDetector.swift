@@ -17,6 +17,8 @@ enum PollingRate {
 
 final class WindowDetector: @unchecked Sendable {
     private let appState: AppState
+    private let processMonitor: ProcessMonitor
+    private let portChecker: PortChecker
     private var pollingTask: Task<Void, Never>?
     private var isPolling: Bool = false
     private var currentRate: PollingRate?
@@ -24,8 +26,10 @@ final class WindowDetector: @unchecked Sendable {
     private static let it2apiPath = "/Applications/iTerm.app/Contents/Resources/utilities/it2api"
     private var hasIt2api: Bool = false
 
-    init(appState: AppState) {
+    init(appState: AppState, processMonitor: ProcessMonitor, portChecker: PortChecker) {
         self.appState = appState
+        self.processMonitor = processMonitor
+        self.portChecker = portChecker
         self.hasIt2api = FileManager.default.isExecutableFile(atPath: Self.it2apiPath)
     }
 
@@ -67,10 +71,15 @@ final class WindowDetector: @unchecked Sendable {
             ? detectChrome(projects: validProjects)
             : [:]
         async let genericMatches = detectGeneric(projects: validProjects, exclude: ["iTerm2", "Google Chrome"])
+        async let portResults: Void = portChecker.checkAll()
 
-        let iterm = await itermMatches
+        var iterm = await itermMatches
         let chrome = await chromeMatches
         let generic = await genericMatches
+        await portResults
+
+        // Enrich iTerm matches with process info
+        iterm = await enrichItermMatches(iterm)
 
         var merged: [String: [WindowMatch]] = [:]
         for project in projects {
@@ -87,6 +96,20 @@ final class WindowDetector: @unchecked Sendable {
             appState.windowsByProject = merged
         }
         #endif
+    }
+
+    private func enrichItermMatches(_ matches: [String: [ItermMatch]]) async -> [String: [ItermMatch]] {
+        var enriched: [String: [ItermMatch]] = [:]
+        for (name, sessions) in matches {
+            enriched[name] = sessions.map { match in
+                var enrichedMatch = match
+                if let tty = match.tty {
+                    enrichedMatch.processInfo = processMonitor.classifyFromTTY(tty: tty)
+                }
+                return enrichedMatch
+            }
+        }
+        return enriched
     }
 
     // MARK: - Permission Check
@@ -155,7 +178,8 @@ final class WindowDetector: @unchecked Sendable {
                                 windowId: windowId,
                                 tabId: tabId,
                                 sessionId: sessionId,
-                                title: title
+                                title: title,
+                                tty: tty
                             )
                             matches[project.name, default: []].append(match)
                         }

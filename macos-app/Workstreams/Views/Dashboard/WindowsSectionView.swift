@@ -83,7 +83,7 @@ struct WindowCard: View {
         switch match {
         case .iterm(let m):
             if let info = m.processInfo {
-                return info.type.label
+                return info.displayLabel
             }
             return nil
         case .chrome(let m):
