@@ -1,0 +1,96 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024">
+  <defs>
+    <!-- macOS-style rounded rect clip -->
+    <clipPath id="iconClip">
+      <rect x="0" y="0" width="1024" height="1024" rx="228" ry="228"/>
+    </clipPath>
+    <!-- Glow filter for depth -->
+    <filter id="glow" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur in="SourceGraphic" stdDeviation="12" result="blur"/>
+      <feMerge>
+        <feMergeNode in="blur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+    <!-- Subtle inner shadow for depth -->
+    <radialGradient id="bgGrad" cx="50%" cy="35%" r="70%">
+      <stop offset="0%" stop-color="#2a2a3e"/>
+      <stop offset="100%" stop-color="#141420"/>
+    </radialGradient>
+    <!-- Stream path gradients -->
+    <linearGradient id="streamRed" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#FF6B6B" stop-opacity="0.9"/>
+      <stop offset="100%" stop-color="#EE5A24" stop-opacity="0.7"/>
+    </linearGradient>
+    <linearGradient id="streamBlue" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#74B9FF" stop-opacity="0.9"/>
+      <stop offset="100%" stop-color="#0984E3" stop-opacity="0.7"/>
+    </linearGradient>
+    <linearGradient id="streamGreen" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#55EFC4" stop-opacity="0.9"/>
+      <stop offset="100%" stop-color="#00B894" stop-opacity="0.7"/>
+    </linearGradient>
+    <linearGradient id="streamYellow" x1="0%" y1="100%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#FFEAA7" stop-opacity="0.9"/>
+      <stop offset="100%" stop-color="#FDCB6E" stop-opacity="0.7"/>
+    </linearGradient>
+    <linearGradient id="streamMagenta" x1="100%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#DDA0DD" stop-opacity="0.9"/>
+      <stop offset="100%" stop-color="#A855F7" stop-opacity="0.7"/>
+    </linearGradient>
+    <linearGradient id="streamCyan" x1="0%" y1="100%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#81ECEC" stop-opacity="0.9"/>
+      <stop offset="100%" stop-color="#00CEC9" stop-opacity="0.7"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Background -->
+  <g clip-path="url(#iconClip)">
+    <rect x="0" y="0" width="1024" height="1024" fill="url(#bgGrad)"/>
+
+    <!-- Flowing streams: curved paths with colored strokes representing concurrent workstreams -->
+    <!-- Each stream is a flowing curve with dots along it -->
+
+    <!-- Stream 1: Red - flowing from upper-left toward center-right -->
+    <path d="M 120 280 C 280 240, 420 360, 560 320 C 700 280, 780 360, 900 340"
+          stroke="url(#streamRed)" stroke-width="42" fill="none" stroke-linecap="round" opacity="0.85"/>
+    <!-- Dots along red stream -->
+    <circle cx="200" cy="268" r="28" fill="#FF6B6B" opacity="0.95" filter="url(#glow)"/>
+    <circle cx="400" cy="320" r="22" fill="#FF6B6B" opacity="0.8"/>
+    <circle cx="580" cy="316" r="18" fill="#EE5A24" opacity="0.7"/>
+
+    <!-- Stream 2: Blue - flowing from left toward lower-right -->
+    <path d="M 100 480 C 260 420, 400 520, 540 480 C 680 440, 800 520, 940 500"
+          stroke="url(#streamBlue)" stroke-width="42" fill="none" stroke-linecap="round" opacity="0.85"/>
+    <!-- Dots along blue stream -->
+    <circle cx="240" cy="448" r="26" fill="#74B9FF" opacity="0.95" filter="url(#glow)"/>
+    <circle cx="460" cy="492" r="24" fill="#74B9FF" opacity="0.85"/>
+    <circle cx="700" cy="460" r="20" fill="#0984E3" opacity="0.7"/>
+
+    <!-- Stream 3: Green - flowing from upper-left toward lower-right -->
+    <path d="M 140 660 C 300 620, 440 720, 580 680 C 720 640, 820 700, 920 680"
+          stroke="url(#streamGreen)" stroke-width="42" fill="none" stroke-linecap="round" opacity="0.85"/>
+    <!-- Dots along green stream -->
+    <circle cx="280" cy="636" r="24" fill="#55EFC4" opacity="0.95" filter="url(#glow)"/>
+    <circle cx="500" cy="700" r="22" fill="#55EFC4" opacity="0.8"/>
+    <circle cx="740" cy="656" r="16" fill="#00B894" opacity="0.65"/>
+
+    <!-- Accent dots: smaller, scattered between streams for richness -->
+    <!-- Yellow accent -->
+    <circle cx="650" cy="380" r="14" fill="#FFEAA7" opacity="0.7" filter="url(#glow)"/>
+    <circle cx="340" cy="560" r="12" fill="#FDCB6E" opacity="0.6"/>
+
+    <!-- Magenta accent -->
+    <circle cx="780" cy="560" r="16" fill="#DDA0DD" opacity="0.7" filter="url(#glow)"/>
+    <circle cx="180" cy="400" r="10" fill="#A855F7" opacity="0.5"/>
+
+    <!-- Cyan accent -->
+    <circle cx="520" cy="600" r="14" fill="#81ECEC" opacity="0.65" filter="url(#glow)"/>
+    <circle cx="860" cy="420" r="11" fill="#00CEC9" opacity="0.55"/>
+
+    <!-- Central bright focus dot — representing "current focus" -->
+    <circle cx="512" cy="490" r="44" fill="white" opacity="0.15"/>
+    <circle cx="512" cy="490" r="32" fill="white" opacity="0.25"/>
+    <circle cx="512" cy="490" r="20" fill="white" opacity="0.6" filter="url(#glow)"/>
+  </g>
+</svg>

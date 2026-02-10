@@ -176,7 +176,7 @@ macos-app/Workstreams/
   - Scope: Detect when Accessibility/Automation permissions are missing, show helpful prompt directing user to System Settings, gracefully degrade (show permission prompt in window sections when denied), re-check every 30s until granted
   - Acceptance: First launch guides user through permission grants, app works after granting
 
-- [ ] **Create app icon** `[pending]`
+- [x] **Create app icon** `[complete]`
   - Scope: App icon for Assets.xcassets, should reflect the workstreams concept (multiple colored streams/dots)
   - Acceptance: App has a proper icon in menu bar "about" and Finder
 
