@@ -62,12 +62,12 @@ macos-app/Workstreams/
   - Acceptance: App builds, shows empty menu bar icon, no Dock icon
 
 ### Phase 2: State Monitor + Menu Bar
-- [ ] **Implement StateMonitor service** `[in_progress]`
+- [x] **Implement StateMonitor service** `[complete]`
   - Spec: [state-monitor.md](./specs/state-monitor.md) — DispatchSource setup, reopen on rename/delete, retry logic (3x/50ms), fallback polling, file lifecycle table
   - Scope: `@Observable` class that reads `~/.workstreams/state.json`, watches with DispatchSource (debounced 100ms), fallback 2s polling timer, publishes state changes
   - Acceptance: State updates reactively when CLI modifies state.json
 
-- [ ] **Implement MenuBarIcon** `[pending]`
+- [ ] **Implement MenuBarIcon** `[in_progress]`
   - Spec: [ui.md](./specs/ui.md#menu-bar-icon) — icon states, color mapping
   - Scope: SF Symbol colored circle reflecting focused project's color, gray when no focus
   - Acceptance: Menu bar shows colored dot matching `current_focus` project's color
